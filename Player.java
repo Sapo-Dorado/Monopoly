@@ -10,7 +10,7 @@ public class Player
         this.position = 0;
     }
 
-    public int move()
+    public void move()
     {
         int roll = Die.roll();
         position += roll;
@@ -18,7 +18,13 @@ public class Player
         {
             position = position % Board.NUM_SQUARES;
         }
-        return roll;
+        IO.display("You rolled a " + roll + ".");
+        evaluateSquare();
+    }
+
+    public void evaluateSquare()
+    {
+        IO.display("You landed on " + Board.squareList[position]);
     }
 
     public String getName()

@@ -1,21 +1,87 @@
 public class Board
 {
-    private String[] squareList;
-    private Property[] propertyList;
-    static final int NUM_SQUARES = SquaresInfo.squareList.length;
-    public Board()
-    {
-        squareList = SquaresInfo.squareList;
-        propertyList = SquaresInfo.propertyList;
-    }
-    
-    public String[] getSquareList()
-    {
-        return squareList;
-    }
-    
-    public Property[] getPropertyList()
-    {
-        return propertyList;
-    }
+    static final String[] squareList =
+          { "Go",
+            "Mediterranean Avenue",
+            "Community Chest",
+            "Baltic Avenue",
+            "Income Tax",
+            "Reading Railroad",
+            "Oriental Avenue",
+            "Chance",
+            "Vermont Avenue",
+            "Connecticut Avenue",
+            "Jail",
+            "St. Charles Place",
+            "Electric Company",
+            "States Avenue",
+            "Virginia Avenue",
+            "Pensylvania Railroad",
+            "St. James Place",
+            "Community Chest",
+            "Tennessee Avenue",
+            "New York Avenue",
+            "Free Parking",
+            "Kentucky Avenue",
+            "Chance",
+            "Indiana Avenue",
+            "Illinois Avenue",
+            "B. & O. Railroad",
+            "Atlantic Avenue",
+            "Ventnor Avenue",
+            "Water Works",
+            "Marvin Gardens",
+            "Go To Jail",
+            "Pacific Avenue",
+            "North Carolina Avenue",
+            "Community Chest",
+            "Pennsylvania Avenue",
+            "Short Line",
+            "Chance",
+            "Park Place",
+            "Luxury Tax",
+            "Boardwalk"
+          };
+    public static final Property[] propertyList =
+          { null,
+            (new StandardProperty("Mediterranean Avenue", 60, 2, 10, 30, 90, 160, 250, 50)),
+            null,
+            (new StandardProperty("Baltic Avenue", 60, 4, 20, 60, 180, 320, 450, 50)),
+            null,
+            (new RailroadProperty("Reading Railroad")),
+            (new StandardProperty("Oriental Avenue", 100, 6, 30, 90, 270, 400, 550, 50)),
+            null,
+            (new StandardProperty("Vermont Avenue", 100, 6, 30, 90, 270, 400, 550, 50)),
+            (new StandardProperty("Connecticut Avenue", 120, 8, 40, 100, 300, 450, 600, 50)),
+            null,
+            (new StandardProperty("St. Charles Place", 140, 10, 50, 150, 450, 625, 750, 100)),
+            (new UtilityProperty("Electric Company")),
+            (new StandardProperty("States Avenue", 140, 10, 50, 150, 450, 625, 750, 100)),
+            (new StandardProperty("Virginia Avenue", 160, 12, 60, 180, 500, 700, 900, 100)),
+            (new RailroadProperty("Pensylvania Railroad")),
+            (new StandardProperty("St. James Place", 180, 14, 70, 200, 550, 750, 950, 100)),
+            null,
+            (new StandardProperty("Tennessee Avenue", 14, 180, 70, 200, 550, 750, 950, 100)),
+            (new StandardProperty("New York Avenue", 200, 16, 80, 220, 600, 800, 1000, 100)),
+            null,
+            (new StandardProperty("Kentucky Avenue", 220, 18, 90, 250, 700, 875, 1050, 100)),
+            null,
+            (new StandardProperty("Indiana Avenue", 220, 18, 90, 250, 700, 875, 1050, 100)),
+            (new StandardProperty("Illinois Avenue", 240, 20, 100, 300, 750, 925, 1100, 150)),
+            (new RailroadProperty("B. & O. Railroad")),
+            (new StandardProperty("Atlantic Avenue", 260, 22, 110, 330, 800, 975, 1150, 150)),
+            (new StandardProperty("Ventnor Avenue", 260, 22, 110, 330, 800, 975, 1150, 150)),
+            (new UtilityProperty("Water Works")),
+            (new StandardProperty("Marvin Gardens", 280, 24, 120, 350, 850, 1025, 1200, 150)),
+            null,
+            (new StandardProperty("Pacific Avenue", 300, 26, 130, 390, 900, 1100, 1275, 150)),
+            (new StandardProperty("North Carolina Avenue", 300, 26, 130, 390, 900, 1100, 1275, 150)),
+            null,
+            (new StandardProperty("Pennsylvania Avenue", 320, 28, 150, 450, 1000, 1200, 1400, 200)),
+            (new RailroadProperty("Short Line")),
+            null,
+            (new StandardProperty("Park Place", 350, 35, 175, 500, 1100, 1300, 1500, 200)),
+            null,
+            (new StandardProperty("Boardwalk", 400, 50, 200, 600, 1400, 1700, 2000, 200)),
+          };
 }
