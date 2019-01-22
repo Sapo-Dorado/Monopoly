@@ -1,22 +1,19 @@
-public class Property
+public class Property extends Square
 {
-    protected String name;
+    static int propertyCount = 0;
+
     protected int price;
-    protected int[] costs;
-    protected int development;
-    public String getName()
-    {
-        return name;
-    }
+    protected int propertyNum;
     
     public int getPrice()
     {
         return price;
     }
     
-    public int getCost()
+
+    public int getPropertyNum()
     {
-        return costs[development];
+        return propertyNum;
     }
 }
 

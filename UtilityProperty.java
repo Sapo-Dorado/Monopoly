@@ -4,7 +4,8 @@ public class UtilityProperty extends Property
     {
         this.name = name;
         this.price = 150;
-        this.costs[0] = 4;
-        this.costs[1] = 10;
+        this.type = Square.UTILITY_PROPERTY;
+        this.propertyNum = Property.propertyCount;
+        Property.propertyCount++;
     }
 }
