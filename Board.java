@@ -53,4 +53,52 @@ public class Board
             (new Tax("Luxury Tax", 100)),
             (new StandardProperty("Boardwalk", 400, 50, 200, 600, 1400, 1700, 2000, 200, 7)),
           };
+    public static void printBoard()
+    {
+        IO.display("|--------------------------------------------------------------------------------------------------------------------------------------------------|");
+        IO.display("|              |  Kentucky  |            |  Indiana   |  Illinois  |     B&O    |  Atlantic  |   Ventnor  |    Water   |   Marvin   |    Go to     |");
+        IO.display("| Free Parking |   Avenue   |   Chance   |   Avenue   |   Avenue   |   Railroad |   Avenue   |   Avenue   |    Works   |   Gardens  |     Jail     |");
+        IO.display("|              | Price: 220 |            | Price: 220 | Price: 240 | Price: 200 | Price: 260 | Price: 260 | Price: 150 | Price: 280 |              |");
+        IO.display("|--------------|-----------------------------------------------------------------------------------------------------------------------------------|");
+        IO.display("|   New York   |                                                                                                                    |   Pacific    |");
+        IO.display("|    Avenue    |                                                                                                                    |    Avenue    |");
+        IO.display("|  Price: 200  |                                                                                                                    |  Price: 300  |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|  Tennessee   |                                                                                                                    |North Carolina|");
+        IO.display("|    Avenue    |                                                                                                                    |    Avenue    |");
+        IO.display("|  Price: 180  |                                                                                                                    |  Price: 300  |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|  Community   |                                                                                                                    |  Community   |");
+        IO.display("|    Chest     |                                                                                                                    |    Chest     |");
+        IO.display("|              |                                                                                                                    |              |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|  St. James   |                                                                                                                    | Pennsylvania |");
+        IO.display("|    Place     |                                                                                                                    |    Avenue    |");
+        IO.display("|  Price: 180  |                                                                                                                    |  Price: 320  |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("| Pennsylvania |                                                                                                                    |    Short     |");
+        IO.display("|   Railroad   |                                                                                                                    |    Line      |");
+        IO.display("|  Price: 200  |                                                                                                                    |  Price: 200  |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|   Virginia   |                                                                                                                    |              |");
+        IO.display("|    Avenue    |                                                                                                                    |    Chance    |");
+        IO.display("|  Price: 160  |                                                                                                                    |              |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|    States    |                                                                                                                    |    Park      |");
+        IO.display("|    Avenue    |                                                                                                                    |    Place     |");
+        IO.display("|  Price: 140  |                                                                                                                    |  Price: 350  |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|   Electric   |                                                                                                                    |    Luxury    |");
+        IO.display("|   Company    |                                                                                                                    |     Tax      |");
+        IO.display("|  Price: 150  |                                                                                                                    |   Pay: 100   |");
+        IO.display("|--------------|                                                                                                                    |--------------|");
+        IO.display("|  St. Charles |                                                                                                                    |  Boardwalk   |");
+        IO.display("|     Place    |                                                                                                                    |              |");
+        IO.display("|  Price: 150  |                                                                                                                    |  Price: 400  |");
+        IO.display("|--------------|--------------------------------------------------------------------------------------------------------------------|--------------|");
+        IO.display("|   In Jail/   | Connecticut|   Vermont  |            |  Oriental  |  Reading   |   Income   |   Baltic   |  Community |Mediterran- |              |");
+        IO.display("| Just Visiting|   Avenue   |   Avenue   |   Chance   |   Avenue   |  Railroad  |     Tax    |   Avenue   |    Chest   | ean Avenue |     GO       |");
+        IO.display("|              | Price: 120 | Price: 100 |            | Price: 100 | Price: 200 |  Pay: 200  | Price: 60  |            | Price: 60  |              |");
+        IO.display("|--------------------------------------------------------------------------------------------------------------------------------------------------|");
+    }
 }
