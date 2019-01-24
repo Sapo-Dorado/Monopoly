@@ -3,33 +3,54 @@ public class Player
     static Player[] playerList = new Player[8];
     static int playerCount = 0;
     private String name;
-    public int position;
+    private String password;
+    private int position;
     private int money;
     private Property[] properties;
-    private Property[] morgagedProps;
+    private Property[] mortgagedProps;
     private boolean isBankrupt;
+    private boolean inJail;
+    private int turnsInJail;
     private int numRailroads;
     private int numUtilities;
     private int houseCount;
     private int hotelCount;
     private int getOutOfJailFree;
     private int numProps;
+    private int numMortgagedProps;
     private int numDoubles;
-    
-    public Player(String name)
+
+    public static int getRemainingPlayers()
+    {
+        int count = 0;
+        for (Player p: playerList)
+        {
+            if (p != null)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public Player(String name, String password)
     {
         this.name = name;
+        this.password = password;
         this.position = 0;
         this.money = 1500;
         this.properties = new Property[Board.NUM_PROPERTIES];
-        this.morgagedProps = new Property[Board.NUM_PROPERTIES];
+        this.mortgagedProps = new Property[Board.NUM_PROPERTIES];
         this.isBankrupt = false;
+        this.inJail = false;
+        this.turnsInJail = 0;
         this.numRailroads = -1;
         this.numUtilities = 0;
         this.getOutOfJailFree = 0;
         this.houseCount = 0;
         this.hotelCount = 0;
         this.numProps = 0;
+        this.numMortgagedProps = 0;
         this.numDoubles = 0;
         playerList[playerCount] = this;
         playerCount++;
@@ -37,28 +58,62 @@ public class Player
 
     public void move()
     {
+        Board.printBoard();
         int roll = Die.doubleRoll();
-        if (roll > 12)
+        if (inJail)
         {
-            IO.display(name + " rolled a " + (roll - 100) + " which is a double!");
-            numDoubles++;
-            if (numDoubles == 3)
+            if (turnsInJail == 3)
             {
-                IO.display("Thats three doubles in a row. Now you go to jail.");
-                goToJail();
-                numDoubles = 0;
+                leaveJail();
+            }
+            else if (roll > 12)
+            {
+                IO.display(name + " rolled a " + (roll - 100) + " which is a double and gets them out of jail!");
+                inJail = false;
+                turnsInJail = 0;
+                roll = roll - 100;
+                evaluateMove(roll);
             }
             else
             {
-                evaluateMove(roll - 100);
-                move();
+                String[] choices = {"Yes", "No"};
+                IO.display(name + " rolled a " + roll + " which is not a double. :(");
+                if (IO.prompt("Do you want to leave Jail early?", choices) == 0)
+                {
+                    leaveJail();
+                    evaluateMove(roll);
+                }
+                else
+                {
+                    turnsInJail++;
+                    finishTurn();
+                }
             }
         }
         else
         {
-            IO.display(name + " rolled a " + roll + ".");
-            evaluateMove(roll);
-            numDoubles = 0;
+            if (roll > 12)
+            {
+                IO.display(name + " rolled a " + (roll - 100) + " which is a double!");
+                numDoubles++;
+                if (numDoubles == 3)
+                {
+                    IO.display("Thats three doubles in a row. Now you go to jail.");
+                    goToJail();
+                    numDoubles = 0;
+                }
+                else
+                {
+                    evaluateMove(roll - 100);
+                    move();
+                }
+            }
+            else
+            {
+                IO.display(name + " rolled a " + roll + ".");
+                evaluateMove(roll);
+                numDoubles = 0;
+            }
         }
     }
 
@@ -113,8 +168,12 @@ public class Player
         {
             if (!buyPrompt())
             {
-                resolveAuction();
+                resolveAuction((Property)getCurrentSquare(), "Normal");
             }
+        }
+        else if (owner == -2)
+        {
+            IO.display("This property was mortgaged so no rent is due.");
         }
         else
         {
@@ -128,14 +187,14 @@ public class Player
         int owner = getOwner();
         if (owner == -1)
         {
-            if(buyPrompt())
+            if(!buyPrompt())
             {
-                numRailroads++;
+                resolveAuction((Property)getCurrentSquare(), "Normal");
             }
-            else
-            {
-                resolveAuction();
-            }
+        }
+        else if (owner == -2)
+        {
+            IO.display("This property was mortgaged so no rent is due.");
         }
         else
         {
@@ -152,12 +211,12 @@ public class Player
         {
             if(!buyPrompt())
             {
-                resolveAuction();
+                resolveAuction((Property)getCurrentSquare(), "Normal");
             }
-            else
-            {
-                numUtilities++;
-            }
+        }
+        else if (owner == -2)
+        {
+            IO.display("This property was mortgaged so no rent is due.");
         }
         else
         {
@@ -189,6 +248,7 @@ public class Player
     public void evaluateTax()
     {
         forceSpend(((Tax)getCurrentSquare()).getFee());
+        finishTurn();
     }
     public void evaluateCorner()
     {
@@ -202,12 +262,14 @@ public class Player
     public boolean buyPrompt()
     {
         String[] options = {"Yes","No"};
+        Property thisProp = ((Property)getCurrentSquare());
+        IO.display(name + " has $" + money + " and " + thisProp.toString() + " costs " + thisProp.getPrice() + ".");
         int response = IO.prompt(name + ", do you want to buy this property?", options);
         if (response == 0)
         {
-            if(spend(((Property)getCurrentSquare()).getPrice()) != -1)
+            if(spend(thisProp.getPrice()))
             {
-                gainProperty();
+                gainProperty(thisProp);
                 IO.display(name + " successfully bought " + getCurrentSquare());
                 return true;
             }
@@ -215,8 +277,72 @@ public class Player
         return false;
     }
 
-    public void resolveAuction()
+    public void resolveAuction(Property prop, String type)
     {
+        Player[] potentialBidders = new Player[8];
+        int i = 0;
+        for(Player p: playerList)
+        {
+            if (p != null)
+            {
+                potentialBidders[i] = p;
+                i++;
+            }
+        }
+        int numLeft = 1;
+        int bid = 0;
+        Player highestBidder;
+        if (type.equals("Normal"))
+        {
+            highestBidder = this;
+        }
+        else
+        {
+            highestBidder = potentialBidders[0];
+        }
+        boolean done = false;
+        String[] choices = {"Yes", "No"};
+        IO.display(prop + " is on auction. If nobody bids, " + highestBidder.toString() + " gets it for free");
+        while(!done)
+        {
+            for(i = 0; i < potentialBidders.length; i++)
+            {
+                if (potentialBidders[i] != null && potentialBidders[i] != highestBidder)
+                {
+                    int choice = IO.prompt(potentialBidders[i].getName() + ", the current bid is $" + bid + " would you like to raise?", choices);
+                    if (choice == 0)
+                    {
+                        bid = IO.getOffer("How much would you like to bid?", bid);
+                        highestBidder = potentialBidders[i];
+                        numLeft++;
+                    }
+                    else
+                    {
+                        potentialBidders[i] = null;
+                    }
+                }
+            }
+            if (numLeft == 0)
+            {
+                done = true;
+            }
+            numLeft = 0;
+        }
+        if (highestBidder.forceSpend(bid))
+        {
+            if (type.equals("Normal"))
+            {
+                highestBidder.gainProperty(prop);
+            }
+            else
+            {
+                highestBidder.gainMortgagedProperty(prop);
+            }
+        }
+        else
+        {
+            resolveAuction(prop, type);
+        }
     }
 
     public int getOwner()
@@ -230,20 +356,34 @@ public class Player
             }
             i++;
         }
+        for (Player p: playerList)
+        {
+            if((p != null) && (p.getMortgagedProperties()[((Property)Board.squareList[position]).getPropertyNum()] != null))
+            {
+                return -2;
+            }
+        }
         return -1;
     }
 
     public void goToJail()
     {
         position = 10;
+        inJail = true;
+    }
+
+    public void leaveJail()
+    {
         if(getOutOfJailFree > 0)
         {
-            getOutOfJailFree--;
+            IO.display("You used a get out of jail free card. You have " + --getOutOfJailFree + " left.");
         }
         else
         {
             forceSpend(50);
         }
+        turnsInJail = 0;
+        inJail = false;
     }
 
     public Square getCurrentSquare()
@@ -262,8 +402,8 @@ public class Player
             money -= amount;
             if (goBankrupt())
             {
-                recipient.receive(amount + money);
-                IO.display(name + " payed " + recipient.getName() + " $" + (amount + money));
+                recipient.receive(money);
+                giveAllStuff(recipient);
                 return -1;
             }
             else
@@ -298,6 +438,7 @@ public class Player
             if(position > 24)
             {
                 IO.display("Advance to Illinois Avenue and collect 200 dollars for passing go.");
+                receive(200);
             }
             else
             {
@@ -311,6 +452,7 @@ public class Player
             if (position > 11)
             {
                 IO.display("Advance to St. Charles Place and collect 200 dollars for passing go.");
+                receive(200);
             }
             else
             {
@@ -337,7 +479,7 @@ public class Player
                 position = 28;
             }
             int owner = getOwner();
-            if (owner == -1)
+            if (owner < 0)
             {
                 evaluateSquare(roll);
             }
@@ -365,7 +507,7 @@ public class Player
                 position = 25;
             }
             int owner = getOwner();
-            if (owner == -1)
+            if (owner < 0)
             {
                 evaluateSquare(roll);
             }
@@ -431,7 +573,7 @@ public class Player
             int count = 0;
             for (Player p: playerList)
             {
-                if (p != null)
+                if (p != null && p != this)
                 {
                     count++;
                     p.receive(50);
@@ -494,7 +636,10 @@ public class Player
             IO.display("Grand Opera Night. Collect $50 from each player.");
             for (Player p: playerList)
             {
-                p.pay(this, 50);
+                if (p != null && p != this)
+                {
+                    p.pay(this, 50);
+                }
             }
             finishTurn();
         }
@@ -554,34 +699,59 @@ public class Player
         }
     }
 
-    public int spend(int amount)
+    public boolean spend(int amount)
     {
         if (amount > money)
         {
-            IO.display("Too expensive, purchase canceled");
-            return -1;
+            String[] choices = {"Yes", "No"};
+            int choice = IO.prompt("Are you sure? You will have to mortgage properties to pay for this.", choices);
+            if (choice == 0)
+            {
+                money -= amount;
+                if (!goBankrupt())
+                {
+                    return true;
+                }
+                else
+                {
+                    auctionAllStuff();
+                    return false;
+                }
+            }
+            else
+            {
+                IO.display("Good choice.");
+                return false;
+            }
         }
         else
         {
             money -= amount;
             IO.display(name + " payed $" + amount + " and has $" + money + " remaining.");
-            return 1;
+            return true;
         }
     }
 
-    public int forceSpend(int amount)
+    public boolean forceSpend(int amount)
     {
         if (amount > money)
         {
             money -= amount;
-            goBankrupt();
-            return -1;
+            if (goBankrupt())
+            {
+                auctionAllStuff();
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
         else
         {
             money -= amount;
             IO.display(name + " payed $" + amount + " and has $" + money + " remaining.");
-            return 1;
+            return true;
         }
     }
     public void finishTurn()
@@ -589,13 +759,17 @@ public class Player
         if(!isBankrupt)
         {
             printStatus();
-            String[] choices = {"Buy houses/hotels","Offer a trade", "End your turn"};
+            String[] choices = {"Buy houses/hotels","Buy back mortgaged properties","Offer a trade", "End your turn"};
             int choice = IO.prompt("What would you like to do?", choices);
             if (choice == 0)
             {
                 resolveHousingPurchase();
             }
             else if (choice == 1)
+            {
+                buyBackMortgagedProps();
+            }
+            else if (choice == 2)
             {
                 resolveTrade();
             }
@@ -604,6 +778,46 @@ public class Player
                 IO.display("");
             }
         }
+    }
+
+    public void buyBackMortgagedProps()
+    {
+        if (numMortgagedProps > 0)
+        {
+            String[] choices = new String[numMortgagedProps + 1];
+            int[] propertyLocs = new int[numMortgagedProps];
+            int count = 1;
+            choices[0] = "None of these";
+            for(int i = 0; i < mortgagedProps.length; i++)
+            {
+                if (mortgagedProps[i] != null)
+                {
+                    choices[count] = mortgagedProps[i].toString() + " (" + mortgagedProps[i].getPrice() + ")";
+                    propertyLocs[count - 1] = i;
+                    count++;
+                }
+            }
+            int choice = IO.prompt("Which property do you want to buy back?", choices);
+            if (choice == 0)
+            {
+                finishTurn();
+            }
+            else
+            {
+                Property thisProp = mortgagedProps[propertyLocs[choice - 1]];
+                if (spend(thisProp.getPrice()))
+                {
+                    gainProperty(thisProp);
+                    mortgagedProps[thisProp.getPropertyNum()] = null;
+                    numMortgagedProps--;
+                }
+            }
+        }
+        else
+        {
+            IO.display("No mortgaged properties to buy.");
+        }
+        finishTurn();
     }
 
     public void resolveHousingPurchase()
@@ -651,7 +865,7 @@ public class Player
             choices[i] = "" + i + " ($" + (((StandardProperty)prop).getBuildingCost() *  i) + ")";
         }
         int response = IO.prompt("How many stages of development do you want to buy?", choices);
-        if(spend(response * ((StandardProperty)prop).getBuildingCost()) != -1)
+        if(spend(response * ((StandardProperty)prop).getBuildingCost()))
         {
             ((StandardProperty)prop).develop(response);
             IO.display("You successfully developed your property " + response + " times.");
@@ -685,6 +899,144 @@ public class Player
     }
     public void resolveTrade()
     {
+        String[] choices = new String[getRemainingPlayers() - 1];
+        int[] playerLocs = new int[getRemainingPlayers() - 1];
+        int i = 0;
+        int loc = 0;
+        for (Player p: playerList)
+        {
+            if (p != null && p != this)
+            {
+                choices[i] = p.toString();
+                playerLocs[i] = loc;
+                i++;
+            }
+            loc++;
+        }
+        int choice = IO.prompt("Who do you want to trade with?", choices);
+        Player partner = playerList[playerLocs[choice]];
+        Trade trade1 = createTrade(new Trade());
+        Trade trade2 = partner.createTrade(new Trade());
+        if(!trade1.isCancelled() && !trade2.isCancelled())
+        {
+            IO.display("Just to summarize, " + name + "'s trade:");
+            IO.display(trade1.toString());
+            IO.display("Just to summarize, " + partner.getName() + "'s trade:");
+            IO.display(trade2.toString());
+            IO.display("Please verify your passwords to confirm");
+            if (verifyPassword() && partner.verifyPassword())
+            {
+                finalizeTrade(trade1, trade2);
+                partner.finalizeTrade(trade2, trade1);
+            }
+            partner.printStatus();
+            finishTurn();
+        }
+        else
+        {
+            IO.display("The trade was cancelled");
+        }
+    }
+
+    public void finalizeTrade(Trade lose, Trade get)
+    {
+        money -= lose.getMoney();
+        for (Property p: lose.getProps())
+        {
+            if (p != null)
+            {
+                loseProperty(p);
+            }
+        }
+        for (Property p: lose.getMortgagedProps())
+        {
+            if (p != null)
+            {
+                loseMortgagedProperty(p);
+            }
+        }
+        money += get.getMoney();
+        for (Property p: get.getProps())
+        {
+            if (p != null)
+            {
+                gainProperty(p);
+            }
+        }
+        for (Property p: get.getMortgagedProps())
+        {
+            if (p != null)
+            {
+                gainMortgagedProperty(p);
+            }
+        }
+    }
+        
+    public Trade createTrade(Trade trade)
+    {
+        IO.display(name + "'s Trade:");
+        IO.display(trade.toString());
+        String[] choices = new String[numProps + numMortgagedProps + 3 - trade.getNumProps()];
+        choices[0] = "No more";
+        choices[1] = "Cancel trade";
+        choices[2] = "Add money";
+        int count = 3;
+        int[] propertyLocs = new int[choices.length - 2];
+        for (Property p: properties)
+        {
+            if (p != null && !trade.includesProp(p))
+            {
+                choices[count] = p.toString();
+                propertyLocs[count - 3] = p.getPropertyNum();
+                count++;
+            }
+        }
+        int cutoff = count;
+        for (Property p: mortgagedProps)
+        {
+            if (p != null && !trade.includesMortgagedProp(p))
+            {
+                choices[count] = p.toString() + " (Mortgaged)";
+                propertyLocs[count - 3] = p.getPropertyNum();
+                count++;
+            }
+        }
+        int choice = IO.prompt("Which properties would you like to add to the trade", choices);
+        if (choice == 0)
+        {
+            if (trade.isEmpty())
+            {
+                IO.display("You can't have an empty trade");
+                return createTrade(trade);
+            }
+            else
+            {
+                return trade;
+            }
+        }
+        else if (choice == 1)
+        {
+            trade.cancel();
+            return trade;
+        }
+        else if (choice == 2)
+        {
+            trade.addMoney(IO.getAmount("This trade has $" + trade.getMoney() + " included. What would you like to add. (enter a negative to remove money)"));
+            return createTrade(trade);
+        }
+        else
+        {
+            int loc = propertyLocs[choice - 3];
+            if(choice >= cutoff)
+            {
+                trade.addMortgaged(mortgagedProps[loc]);
+            }
+            else
+            {
+                trade.add(properties[loc]);
+            }
+            return createTrade(trade);
+        }
     }
 
     public void printStatus()
@@ -715,7 +1067,7 @@ public class Player
             }
         }
         IO.display("Morgaged Properties:");
-        for (Property p: morgagedProps)
+        for (Property p: mortgagedProps)
         {
             if(p != null)
             {
@@ -725,7 +1077,7 @@ public class Player
         IO.display("");
     }
 
-    public boolean morgage()
+    public boolean mortgage()
     {
         IO.display(name + " owes $" + Math.abs(money));
         if (numProps > 0)
@@ -749,12 +1101,13 @@ public class Player
                 }
                 addition = 0;
             }
-            int choice = IO.prompt("Which property would you like to morgage?", choices);
+            int choice = IO.prompt("Which property would you like to mortgage?", choices);
             Property thisProp = properties[propertyLocs[choice]];
             if (loseProperty(thisProp))
             {
                 money += propertyVals[choice];
-                morgagedProps[propertyLocs[choice]] = thisProp;
+                numMortgagedProps++;
+                mortgagedProps[thisProp.getPropertyNum()] = thisProp;
             }
             if(money >= 0)
             {
@@ -762,7 +1115,7 @@ public class Player
             }
             else
             {
-                return morgage();
+                return mortgage();
             }
         }
         else
@@ -774,7 +1127,7 @@ public class Player
     
     public boolean goBankrupt()
     {
-        if(!morgage())
+        if(!mortgage())
         {
             IO.display(name + " went Bankrupt");
             for(int i = 0; i < playerList.length; i++)
@@ -785,27 +1138,71 @@ public class Player
                 }
             }
             isBankrupt = true;
+            if(getRemainingPlayers() == 1)
+            {
+                for (Player p: playerList)
+                {
+                    if (p != null)
+                    {
+                        IO.display(p.toString() + " has won the game!");
+                        System.exit(0);
+                    }
+                }
+            }
             return true;
         }
         return false;
     }
 
-    public void gainProperty()
+    public void giveAllStuff(Player recipient)
     {
-        Property thisProp = (Property)getCurrentSquare();
-        properties[thisProp.getPropertyNum()] = thisProp;
-        numProps++;
-        if(thisProp.getType() == Square.STANDARD_PROPERTY)
+        IO.display(name + " gave all properties to " + recipient.toString());
+        for (Property p: mortgagedProps)
         {
-            int[] thisSet = Board.sets[((StandardProperty)thisProp).getSetNumber()];
+            if (p != null)
+            {
+                loseMortgagedProperty(p);
+                recipient.gainMortgagedProperty(p);
+            }
+        }
+    }
+
+    public void auctionAllStuff()
+    {
+        IO.display(name + " has all their stuff up for auction.");
+        for (Property p: mortgagedProps)
+        {
+            if (p != null)
+            {
+                resolveAuction(p, "Mortgaged");
+            }
+        }
+    }
+
+
+    public void gainProperty(Property prop)
+    {
+        properties[prop.getPropertyNum()] = prop;
+        numProps++;
+        if(prop.getType() == Square.STANDARD_PROPERTY)
+        {
+            int[] thisSet = Board.sets[((StandardProperty)prop).getSetNumber()];
             if(checkNulls(thisSet))
             {
                 for (int i = 0; i < thisSet.length; i++)
                 {
                     ((StandardProperty)properties[thisSet[i]]).develop(1);
                 }
-                IO.display("You now have a set!");
+                IO.display(name  + ", you now have a set!");
             }
+        }
+        else if(prop.getType() == Square.RAILROAD_PROPERTY)
+        {
+            numRailroads++;
+        }
+        else
+        {
+            numUtilities++;
         }
     }
 
@@ -817,7 +1214,7 @@ public class Player
             if(checkNulls(thisSet))
             {
                 String[] choices = {"Yes", "No"};
-                int choice = IO.prompt("You will have to sacrifice your set and morgage any developments on this property. Are you sure you want to do this?", choices);
+                int choice = IO.prompt("You will have to sacrifice your set and mortgage any developments on this property. Are you sure you want to do this?", choices);
                 if(choice == 0)
                 {
                     for(int i = 0; i < thisSet.length; i++)
@@ -833,14 +1230,52 @@ public class Player
                 }
             }
         }
+        else if (prop.getType() == Square.RAILROAD_PROPERTY)
+        {
+            numRailroads--;
+        }
+        else
+        {
+            numUtilities--;
+        }
         properties[prop.getPropertyNum()] = null;
         numProps--;
         return true;
     }
 
+    public void gainMortgagedProperty(Property prop)
+    {
+        mortgagedProps[prop.getPropertyNum()] = prop;
+        numMortgagedProps++;
+    }
+
+    public void loseMortgagedProperty(Property prop)
+    {
+        mortgagedProps[prop.getPropertyNum()] = null;
+        numMortgagedProps--;
+    }
+
     public void receive(int amount)
     {
         money += amount;
+    }
+
+    public boolean verifyPassword()
+    {
+        int count = 0;
+        while (count < 3)
+        {
+            String attempt = IO.readString(name + ", please enter your password:");
+            if (attempt.equals(password))
+            {
+                return true;
+            }
+            else
+            {
+                IO.display("Invalid password. You have " +  (3 - ++count) + " remaining");
+            }
+        }
+        return false;
     }
 
     public String getName()
@@ -863,6 +1298,11 @@ public class Player
         return properties;
     }
 
+    public Property[] getMortgagedProperties()
+    {
+        return mortgagedProps;
+    }
+
     public int getNumRailroads()
     {
         return numRailroads;
@@ -870,5 +1310,10 @@ public class Player
     public int getNumUtilities()
     {
         return numUtilities;
+    }
+
+    public String toString()
+    {
+        return name;
     }
 }
