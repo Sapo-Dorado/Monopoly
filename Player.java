@@ -976,7 +976,7 @@ public class Player
     {
         IO.display(name + "'s Trade:");
         IO.display(trade.toString());
-        String[] choices = new String[numProps + numMortgagedProps + 3 - trade.getNumProps()];
+        String[] choices = new String[numProps + numMortgagedProps + 3 - trade.getNumProps() + getOutOfJailFree];
         choices[0] = "No more";
         choices[1] = "Cancel trade";
         choices[2] = "Add money";
@@ -991,7 +991,7 @@ public class Player
                 count++;
             }
         }
-        int cutoff = count;
+        int standardCutoff = count;
         for (Property p: mortgagedProps)
         {
             if (p != null && !trade.includesMortgagedProp(p))
@@ -1000,6 +1000,12 @@ public class Player
                 propertyLocs[count - 3] = p.getPropertyNum();
                 count++;
             }
+        }
+        int propertyCutoff = count;
+        for (int i = getOutOfJailFree - trade.getNumJail(); i > 0; i++)
+        {
+            choices[count] = "Get out of Jail Free Card";
+            count++;
         }
         int choice = IO.prompt("Which properties would you like to add to the trade", choices);
         if (choice == 0)
@@ -1024,10 +1030,15 @@ public class Player
             trade.addMoney(IO.getAmount("This trade has $" + trade.getMoney() + " included. What would you like to add. (enter a negative to remove money)"));
             return createTrade(trade);
         }
+        else if (choice >= propertyCutoff)
+        {
+            trade.addGetOutOfJailFree();
+            return createTrade(trade);
+        }
         else
         {
             int loc = propertyLocs[choice - 3];
-            if(choice >= cutoff)
+            if(choice >= standardCutoff)
             {
                 trade.addMortgaged(mortgagedProps[loc]);
             }
@@ -1074,6 +1085,7 @@ public class Player
                 IO.display(p.toString());
             }
         }
+        IO.display("Get out of jail free cards: " + getOutOfJailFree);
         IO.display("");
     }
 

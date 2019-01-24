@@ -3,6 +3,7 @@ public class Trade
     private int money;
     private Property[] props;
     private Property[] mortgagedProps;
+    private int numGetOutOfJail;
     private int numPropsInTrade;
     private boolean isCancelled;
     private boolean hasProps;
@@ -13,6 +14,7 @@ public class Trade
         this.money = 0;
         this.props = new Property[28];
         this.mortgagedProps = new Property[28];
+        this.numGetOutOfJail = 0;
         this.numPropsInTrade = 0;
         this.isCancelled = false;
         this.hasProps = false;
@@ -47,6 +49,11 @@ public class Trade
             money = 0;
         }
     }
+    
+    public void addGetOutOfJailFree()
+    {
+        numGetOutOfJail++;
+    }
 
     public boolean includesProp(Property prop)
     {
@@ -71,6 +78,11 @@ public class Trade
     public Property[] getMortgagedProps()
     {
         return mortgagedProps;
+    }
+    
+    public int getNumJail()
+    {
+        return numGetOutOfJail;
     }
 
     public boolean isCancelled()

@@ -8,9 +8,6 @@ public class Test
     {
         Player me = new Player("Nicholas", "hi");
         Player you = new Player("Bob", "ho");
-        me.position = 1;
-        me.evaluateSquare(1);
-        me.money = 20;
-        me.forceSpend(60);
+        me.numGetOutOf
     }
 }
