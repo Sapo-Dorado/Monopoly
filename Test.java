@@ -8,6 +8,8 @@ public class Test
     {
         Player me = new Player("Nicholas", "hi");
         Player you = new Player("Bob", "ho");
-        me.numGetOutOf
+        me.getOutOfJailFree = 3;
+        me.evaluateSquare(1);
+        you.printStatus();
     }
 }

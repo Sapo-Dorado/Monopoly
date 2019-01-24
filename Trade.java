@@ -110,12 +110,13 @@ public class Trade
                 output += p.toString() + " (Mortgaged)\n";
             }
         }
+        output += "Get Out of Jail Free Cards: " + numGetOutOfJail;
         return output;
    }
    
    public boolean isEmpty()
    {
-       return money==0 && !hasProps && !hasMortgagedProps;
+       return money==0 && numGetOutOfJail == 0 && !hasProps && !hasMortgagedProps;
    }
 
    public int getNumProps()

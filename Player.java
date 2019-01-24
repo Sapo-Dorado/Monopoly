@@ -955,6 +955,7 @@ public class Player
                 loseMortgagedProperty(p);
             }
         }
+        getOutOfJailFree -= lose.getNumJail();
         money += get.getMoney();
         for (Property p: get.getProps())
         {
@@ -970,13 +971,14 @@ public class Player
                 gainMortgagedProperty(p);
             }
         }
+        getOutOfJailFree += get.getNumJail();
     }
         
     public Trade createTrade(Trade trade)
     {
         IO.display(name + "'s Trade:");
         IO.display(trade.toString());
-        String[] choices = new String[numProps + numMortgagedProps + 3 - trade.getNumProps() + getOutOfJailFree];
+        String[] choices = new String[numProps + numMortgagedProps + getOutOfJailFree + 3 - trade.getNumProps() - trade.getNumJail()];
         choices[0] = "No more";
         choices[1] = "Cancel trade";
         choices[2] = "Add money";
@@ -1002,7 +1004,7 @@ public class Player
             }
         }
         int propertyCutoff = count;
-        for (int i = getOutOfJailFree - trade.getNumJail(); i > 0; i++)
+        for (int i = getOutOfJailFree - trade.getNumJail(); i > 0; i--)
         {
             choices[count] = "Get out of Jail Free Card";
             count++;
