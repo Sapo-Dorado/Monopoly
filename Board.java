@@ -30,7 +30,7 @@ public class Board
             (new RailroadProperty("Pensylvania Railroad")),
             (new StandardProperty("St. James Place", 180, 14, 70, 200, 550, 750, 950, 100, 3)),
             (new CommunityChest()),
-            (new StandardProperty("Tennessee Avenue", 14, 180, 70, 200, 550, 750, 950, 100, 3)),
+            (new StandardProperty("Tennessee Avenue",180, 14, 70, 200, 550, 750, 950, 100, 3)),
             (new StandardProperty("New York Avenue", 200, 16, 80, 220, 600, 800, 1000, 100, 3)),
             (new Corner("Free Parking")),
             (new StandardProperty("Kentucky Avenue", 220, 18, 90, 250, 700, 875, 1050, 100, 4)),

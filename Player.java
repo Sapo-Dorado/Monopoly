@@ -262,10 +262,11 @@ public class Player
     public boolean buyPrompt()
     {
         String[] options = {"Yes","No"};
+        Property thisProp = ((Property)getCurrentSquare());
+        IO.display(name + " has $" + money + " and " + thisProp.toString() + " costs " + thisProp.getPrice() + ".");
         int response = IO.prompt(name + ", do you want to buy this property?", options);
         if (response == 0)
         {
-            Property thisProp = ((Property)getCurrentSquare());
             if(spend(thisProp.getPrice()))
             {
                 gainProperty(thisProp);
@@ -437,6 +438,7 @@ public class Player
             if(position > 24)
             {
                 IO.display("Advance to Illinois Avenue and collect 200 dollars for passing go.");
+                receive(200);
             }
             else
             {
@@ -450,6 +452,7 @@ public class Player
             if (position > 11)
             {
                 IO.display("Advance to St. Charles Place and collect 200 dollars for passing go.");
+                receive(200);
             }
             else
             {
@@ -570,7 +573,7 @@ public class Player
             int count = 0;
             for (Player p: playerList)
             {
-                if (p != null)
+                if (p != null && p != this)
                 {
                     count++;
                     p.receive(50);
@@ -633,7 +636,10 @@ public class Player
             IO.display("Grand Opera Night. Collect $50 from each player.");
             for (Player p: playerList)
             {
-                p.pay(this, 50);
+                if (p != null && p != this)
+                {
+                    p.pay(this, 50);
+                }
             }
             finishTurn();
         }
