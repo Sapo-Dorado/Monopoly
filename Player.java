@@ -123,8 +123,8 @@ public class Player
         if (position >= Board.NUM_SQUARES)
         {
             IO.display(name + " passed Go and earned $200.");
-            IO.display(name + " now has $" + money);
             receive(200);
+            IO.display(name + " now has $" + money);
             position = position % Board.NUM_SQUARES;
         }
         evaluateSquare(roll);
