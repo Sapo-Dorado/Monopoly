@@ -59,6 +59,8 @@ public class Player
     public void move()
     {
         Board.printBoard();
+        String[] onlyChoice = {"Roll"};
+        IO.prompt(name + "'s turn.", onlyChoice); 
         int roll = Die.doubleRoll();
         if (inJail)
         {
