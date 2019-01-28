@@ -1329,7 +1329,7 @@ public class Player
             }
             else
             {
-                IO.display("Invalid password. You have " +  (3 - ++count) + " remaining");
+                IO.display("Invalid password. You have " +  (3 - ++count) + "attempts remaining");
             }
         }
         return false;

@@ -96,7 +96,7 @@ public class Board
         IO.display("|--------------|                                                                                                                    |--------------|");
         IO.display("|  St. Charles |                                                                                                                    |  Boardwalk   |");
         IO.display("|     Place    |                                                                                                                    |              |");
-        IO.display("|  Price: 150  |                                                                                                                    |  Price: 400  |");
+        IO.display("|  Price: 140  |                                                                                                                    |  Price: 400  |");
         IO.display("|--------------|--------------------------------------------------------------------------------------------------------------------|--------------|");
         IO.display("|   In Jail/   | Connecticut|   Vermont  |            |  Oriental  |  Reading   |   Income   |   Baltic   |  Community |Mediterran- |              |");
         IO.display("| Just Visiting|   Avenue   |   Avenue   |   Chance   |   Avenue   |  Railroad  |     Tax    |   Avenue   |    Chest   | ean Avenue |     GO       |");
