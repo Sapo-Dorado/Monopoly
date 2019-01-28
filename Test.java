@@ -1,15 +1,19 @@
+import java.util.Scanner;
+import java.io.FileNotFoundException;
+import java.io.File;
+
+
 public class Test
 {
-    public void tester(int[] var)
-    {
-    }
-
     public static void main(String[] args)
     {
-        Player me = new Player("Nicholas", "hi");
-        Player you = new Player("Bob", "ho");
-        me.getOutOfJailFree = 3;
-        me.evaluateSquare(1);
-        you.printStatus();
+        try
+        {
+            Scanner in = new Scanner(new File("./gameSaves/test.txt"));
+            System.out.println(in.nextLine());
+        }
+        catch (FileNotFoundException ex)
+        {
+        }
     }
 }

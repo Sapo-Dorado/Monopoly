@@ -1,4 +1,11 @@
 import java.util.Scanner;
+import java.io.File;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 public class IO
 {
     public static void display(String message)
@@ -82,5 +89,51 @@ public class IO
         {
             return getAmount(prompt);
         }
+    }
+
+    public static void saveGame(String saveName, String[] data)
+    {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("./gameSaves/" + saveName + ".txt")))))
+        {
+            for (String line: data)
+            {
+               writer.write(line + "\n");
+            }
+            System.out.println("File successfully saved");
+            System.exit(0);
+        }
+        catch(IOException e)
+        {
+            System.out.println("Problem writing to file");
+        }
+    }
+
+    public static String[] readSave(String saveName)
+    {
+        String[] data;
+        try
+        {
+            Scanner preliminaryScan = new Scanner(new File("./gameSaves/" + saveName + ".txt"));
+            int numLines = 0;
+            while (preliminaryScan.hasNextLine())
+            {
+                numLines++;
+                preliminaryScan.nextLine();
+            }
+            Scanner read = new Scanner(new File("./gameSaves/" + saveName + ".txt"));
+            data = new String[numLines];
+            for (int i = 0; i < numLines; i++)
+            {
+                data[i] = read.nextLine();
+            }
+            return data;
+        }
+        catch (FileNotFoundException ex)
+        {
+            System.out.println("Save not found");
+            System.exit(0);
+        }
+        data = new String[1];
+        return data;
     }
 }

@@ -6,8 +6,6 @@ public class Player
     private String password;
     private int position;
     private int money;
-    private Property[] properties;
-    private Property[] mortgagedProps;
     private boolean isBankrupt;
     private boolean inJail;
     private int turnsInJail;
@@ -19,6 +17,8 @@ public class Player
     private int numProps;
     private int numMortgagedProps;
     private int numDoubles;
+    private Property[] properties;
+    private Property[] mortgagedProps;
 
     public static int getRemainingPlayers()
     {
@@ -56,39 +56,95 @@ public class Player
         playerCount++;
     }
 
+    public Player(String name, String password, int position, int money, 
+            Property[] properties, Property[] mortgagedProps,
+            boolean inJail, int turnsInJail, int numRailroads,
+            int numUtilities, int houseCount, int hotelCount,
+            int getOutOfJailFree)
+    {
+        this.name = name;
+        this.password = password;
+        this.position = position;
+        this.money = money;
+        this.properties = new Property[Board.NUM_PROPERTIES];
+        this.mortgagedProps = new Property[Board.NUM_PROPERTIES];
+        for(Property p: properties)
+        {
+            this.properties[p.getPropertyNum()] = p;
+        }
+        for(Property p: mortgagedProps)
+        {
+            this.mortgagedProps[p.getPropertyNum()] = p;
+        }
+        this.isBankrupt = false;
+        this.inJail = inJail;
+        this.turnsInJail = turnsInJail;
+        this.numRailroads = numRailroads;
+        this.numUtilities = numUtilities;
+        this.getOutOfJailFree = getOutOfJailFree;
+        this.houseCount = houseCount;
+        this.hotelCount = hotelCount;
+        this.numProps = properties.length;
+        this.numMortgagedProps = mortgagedProps.length;
+        this.numDoubles = 0;
+        playerList[playerCount] = this;
+        playerCount++;
+    }
+
+
     public void move()
     {
-        Board.printBoard();
         String[] onlyChoice = {"Roll"};
-        IO.prompt(name + "'s turn.", onlyChoice); 
+        String message;
+        if (numDoubles == 0)
+        {
+            Board.printBoard();
+            message = name + "'s turn.";
+        }
+        else if (numDoubles == 1)
+        {
+            message = name + "'s second turn.";
+        }
+        else
+        {
+            message = name + "'s third turn.";
+        }
+        IO.prompt(message, onlyChoice); 
         int roll = Die.doubleRoll();
         if (inJail)
         {
-            if (turnsInJail == 3)
-            {
-                leaveJail();
-            }
-            else if (roll > 12)
+            if (roll > 12)
             {
                 IO.display(name + " rolled a " + (roll - 100) + " which is a double and gets them out of jail!");
                 inJail = false;
                 turnsInJail = 0;
                 roll = roll - 100;
                 evaluateMove(roll);
+                finishTurn();
             }
             else
             {
-                String[] choices = {"Yes", "No"};
-                IO.display(name + " rolled a " + roll + " which is not a double. :(");
-                if (IO.prompt("Do you want to leave Jail early?", choices) == 0)
+                if (turnsInJail == 3)
                 {
                     leaveJail();
                     evaluateMove(roll);
+                    finishTurn();
                 }
                 else
                 {
-                    turnsInJail++;
-                    finishTurn();
+                    String[] choices = {"Yes", "No"};
+                    IO.display(name + " rolled a " + roll + " which is not a double. :(");
+                    if (IO.prompt("Do you want to leave Jail early?", choices) == 0)
+                    {
+                        leaveJail();
+                        evaluateMove(roll);
+                        finishTurn();
+                    }
+                    else
+                    {
+                        turnsInJail++;
+                        finishTurn();
+                    }
                 }
             }
         }
@@ -103,6 +159,7 @@ public class Player
                     IO.display("Thats three doubles in a row. Now you go to jail.");
                     goToJail();
                     numDoubles = 0;
+                    finishTurn();
                 }
                 else
                 {
@@ -115,6 +172,7 @@ public class Player
                 IO.display(name + " rolled a " + roll + ".");
                 evaluateMove(roll);
                 numDoubles = 0;
+                finishTurn();
             }
         }
     }
@@ -181,7 +239,6 @@ public class Player
         {
             pay(Player.playerList[owner], ((StandardProperty)getCurrentSquare()).getCost());
         }
-        finishTurn();
     }
 
     public void evaluateRailroad()
@@ -203,7 +260,6 @@ public class Player
             Player recipient = Player.playerList[owner];
             pay(recipient, 25 * (int)Math.pow(2,recipient.getNumRailroads()));
         }
-        finishTurn();
     }
 
     public void evaluateUtility(int roll)
@@ -234,7 +290,6 @@ public class Player
             }
             pay(recipient, amount);
         }
-        finishTurn();
     }
     public void evaluateDeck(int roll)
     {
@@ -250,7 +305,6 @@ public class Player
     public void evaluateTax()
     {
         forceSpend(((Tax)getCurrentSquare()).getFee());
-        finishTurn();
     }
     public void evaluateCorner()
     {
@@ -258,7 +312,6 @@ public class Player
         {
             goToJail();
         }
-        finishTurn();
     }
 
     public boolean buyPrompt()
@@ -488,7 +541,6 @@ public class Player
             else
             {
                 pay(Player.playerList[owner], 10 * Die.roll());
-                finishTurn();
             }
         }
         else if (card == 4 || card == 14)
@@ -517,20 +569,17 @@ public class Player
             {
                 Player recipient = Player.playerList[owner];
                 pay(recipient, 2 * (25 * (int)Math.pow(2,recipient.getNumRailroads())));
-                finishTurn();
             }
         }
         else if (card == 5)
         {
             IO.display("The bank pays you a dividend of $50.");
             receive(50);
-            finishTurn();
         }
         else if (card == 6)
         {
             IO.display("You have received a get out of jail free card.");
             getOutOfJailFree++;
-            finishTurn();
         }
         else if (card == 7)
         {
@@ -542,19 +591,16 @@ public class Player
         {
             IO.display("Go to Jail");
             goToJail();
-            finishTurn();
         }
         else if (card == 9)
         {
             IO.display("Pay $25 for each house and $100 for each hotel.");
             forceSpend(25 * houseCount + 100 * hotelCount);
-            finishTurn();
         }
         else if (card == 10)
         {
             IO.display("Pay the poor tax of $15");
             forceSpend(15);
-            finishTurn();
         }
         else if (card == 11)
         {
@@ -582,13 +628,11 @@ public class Player
                 }
             }
             forceSpend(50 * count);
-            finishTurn();
         }
         else
         {
             IO.display("Your building loan matures. You earn $150.");
             receive(150);
-            finishTurn();
         }
     }
 
@@ -601,37 +645,31 @@ public class Player
             IO.display("Advance to go and collect $200");
             receive(200);
             position = 0;
-            finishTurn();
         }
         else if (card == 1)
         {
             IO.display("Bank error in your favor. Collect $200.");
             receive(200);
-            finishTurn();
         }
         else if (card == 2)
         {
             IO.display("Doctor's fees. Pay $50.");
             forceSpend(50);
-            finishTurn();
         }
         else if (card == 3)
         {
             IO.display("You earn $50 from stock.");
             receive(50);
-            finishTurn();
         }
         else if (card == 4)
         {
             IO.display("You earn a get out of jail free card.");
             getOutOfJailFree++;
-            finishTurn();
         }
         else if (card == 5)
         {
             IO.display("Go to jail");
             goToJail();
-            finishTurn();
         }
         else if (card == 6)
         {
@@ -643,61 +681,51 @@ public class Player
                     p.pay(this, 50);
                 }
             }
-            finishTurn();
         }
         else if (card == 7)
         {
             IO.display("Holiday fund matures. Collect $100");
             receive(100);
-            finishTurn();
         }
         else if (card == 8)
         {
             IO.display("Income Tax refund. Collect $20.");
             receive(20);
-            finishTurn();
         }
         else if (card == 9)
         {
             IO.display("Life insurance matures. Collect $100.");
             receive(100);
-            finishTurn();
         }
         else if (card == 10)
         {
             IO.display("Hospital fees. Pay $50");
             forceSpend(50);
-            finishTurn();
         }
         else if (card == 11)
         {
             IO.display("School fees. Pay $50.");
             forceSpend(50);
-            finishTurn();
         }
         else if (card == 12)
         {
             IO.display("Receive $20 consulting fee");
             receive(20);
-            finishTurn();
         }
         else if (card == 13)
         {
             IO.display("You are assessed for street repairs. Pay $40 per house and $115 per hotel");
             forceSpend(40 * houseCount + 115 * hotelCount);
-            finishTurn();
         }
         else if (card == 14)
         {
             IO.display("You have won second prize in a beauty contest. Collect $10.");
             receive(10);
-            finishTurn();
         }
         else
         {
             IO.display("You inherit $100");
             receive(100);
-            finishTurn();
         }
     }
 
@@ -761,17 +789,30 @@ public class Player
         if(!isBankrupt)
         {
             printStatus();
-            String[] choices = {"Buy houses/hotels","Buy back mortgaged properties","Offer a trade", "End your turn"};
+            String[] choices = {"Save Game", "Buy houses/hotels","Buy back mortgaged properties","Offer a trade", "End your turn"};
             int choice = IO.prompt("What would you like to do?", choices);
             if (choice == 0)
             {
-                resolveHousingPurchase();
+                if (isLastPlayer())
+                {
+                    String saveName = IO.readString("What do you want to call your save?");
+                    IO.saveGame(saveName, getGameData());
+                }
+                else
+                {
+                    IO.display("You can only save when everybody has taken an equal number of turns");
+                }
+                finishTurn();
             }
             else if (choice == 1)
             {
-                buyBackMortgagedProps();
+                resolveHousingPurchase();
             }
             else if (choice == 2)
+            {
+                buyBackMortgagedProps();
+            }
+            else if (choice == 3)
             {
                 resolveTrade();
             }
@@ -1294,6 +1335,62 @@ public class Player
         return false;
     }
 
+    public String[] getGameData()
+    {
+        int numDataPoints = 0;
+        for(Player p: playerList)
+        {
+            if (p != null)
+            {
+                numDataPoints += (13 + p.numProps + p.numMortgagedProps);
+            }
+        }
+        String[] data = new String[numDataPoints];
+        int i = 0;
+        for (Player p: playerList)
+        {
+            if (p != null)
+            {
+                data[i++] = p.name;
+                data[i++] = p.password;
+                data[i++] = "" + p.position;
+                data[i++] = "" + p.money;
+                if (p.inJail)
+                {
+                    data[i++] = "1";
+                }
+                else
+                {
+                    data[i++] = "0";
+                }
+                data[i++] = "" + p.turnsInJail;
+                data[i++] = "" + p.numRailroads;
+                data[i++] = "" + p.numUtilities;
+                data[i++] = "" + p.houseCount;
+                data[i++] = "" + p.hotelCount;
+                data[i++] = "" + p.getOutOfJailFree;
+                data[i++] = "" + p.numProps;
+                data[i++] = "" + p.numMortgagedProps;
+                for (Property prop: p.properties)
+                {
+                    if (prop != null)
+                    {
+                        data[i++] = "" + prop.getPropertyNum();
+                    }
+                }
+                for (Property prop: p.mortgagedProps)
+                {
+                    if (prop != null)
+                    {
+                        data[i++] = "" + prop.getPropertyNum();
+                    }
+                }
+            }
+        }
+        return data;
+    }
+
+
     public String getName()
     {
         return name;
@@ -1331,5 +1428,24 @@ public class Player
     public String toString()
     {
         return name;
+    }
+
+    public boolean isLastPlayer()
+    {
+        for (int i = playerList.length - 1; i >= 0; i--)
+        {
+            if (playerList[i] != null)
+            {
+                if (playerList[i] == this)
+                {
+                    return true;
+                }
+                else 
+                {
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 }
