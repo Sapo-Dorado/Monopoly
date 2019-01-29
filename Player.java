@@ -4,7 +4,7 @@ public class Player
     static int playerCount = 0;
     private String name;
     private String password;
-    public int position;
+    private int position;
     private int money;
     private boolean isBankrupt;
     private boolean inJail;
@@ -980,6 +980,7 @@ public class Player
         else
         {
             IO.display("The trade was cancelled");
+            finishTurn();
         }
     }
 
@@ -1324,10 +1325,15 @@ public class Player
         int count = 0;
         while (count < 3)
         {
-            String attempt = IO.readString(name + ", please enter your password:");
+            String attempt = IO.readString(name + ", please enter your password. Type cancel to cancel.");
             if (attempt.equals(password))
             {
                 return true;
+            }
+            else if (attempt.equals("cancel")
+            {
+                IO.display("Cancelled");
+                return false;
             }
             else
             {
