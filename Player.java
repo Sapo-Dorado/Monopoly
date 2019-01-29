@@ -1330,7 +1330,7 @@ public class Player
             {
                 return true;
             }
-            else if (attempt.equals("cancel")
+            else if (attempt.equals("cancel"))
             {
                 IO.display("Cancelled");
                 return false;
