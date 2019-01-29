@@ -4,7 +4,7 @@ public class Player
     static int playerCount = 0;
     private String name;
     private String password;
-    private int position;
+    public int position;
     private int money;
     private boolean isBankrupt;
     private boolean inJail;
@@ -540,6 +540,7 @@ public class Player
             }
             else
             {
+                IO.display(name + " landed on " + getCurrentSquare().toString() + ".");
                 pay(Player.playerList[owner], 10 * Die.roll());
             }
         }
@@ -567,6 +568,7 @@ public class Player
             }
             else
             {
+                IO.display(name + " landed on " + getCurrentSquare().toString() + ".");
                 Player recipient = Player.playerList[owner];
                 pay(recipient, 2 * (25 * (int)Math.pow(2,recipient.getNumRailroads())));
             }

@@ -1,19 +1,25 @@
-import java.util.Scanner;
-import java.io.FileNotFoundException;
-import java.io.File;
-
-
 public class Test
 {
     public static void main(String[] args)
     {
-        try
-        {
-            Scanner in = new Scanner(new File("./gameSaves/test.txt"));
-            System.out.println(in.nextLine());
-        }
-        catch (FileNotFoundException ex)
-        {
-        }
+        Player me = new Player("Nicholas", "Brown");
+        Player you = new Player("Sam", "banana");
+        you.position = 15;
+        you.evaluateSquare(1);
+        you.position = 12;
+        you.evaluateSquare(1);
+        me.position = 7;
+        me.evaluateSquare(1);
+        me.position = 7;
+        me.evaluateSquare(1);
+        me.position = 7;
+        me.evaluateSquare(1);
+        me.position = 7;
+        me.evaluateSquare(1);
+        me.position = 7;
+        me.evaluateSquare(1);
+        me.position = 7;
+        me.evaluateSquare(1);
+
     }
 }
