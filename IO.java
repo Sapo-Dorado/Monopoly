@@ -3,9 +3,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.FileWriter;
 
 public class IO
 {
@@ -94,13 +92,14 @@ public class IO
 
     public static void saveGame(String saveName, String[] data)
     {
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("./gameSaves/" + saveName + ".txt")))))
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("./gameSaves/" + saveName + ".txt"))))
         {
             for (String line: data)
             {
                writer.write(line + "\n");
             }
             System.out.println("File successfully saved");
+            writer.close();
             System.exit(0);
         }
         catch(IOException e)
