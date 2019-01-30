@@ -1,25 +1,29 @@
+import java.util.Scanner;
+import java.io.File;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 public class Test
 {
     public static void main(String[] args)
     {
-        Player me = new Player("Nicholas", "Brown");
-        Player you = new Player("Sam", "banana");
-        you.position = 15;
-        you.evaluateSquare(1);
-        you.position = 12;
-        you.evaluateSquare(1);
-        me.position = 7;
-        me.evaluateSquare(1);
-        me.position = 7;
-        me.evaluateSquare(1);
-        me.position = 7;
-        me.evaluateSquare(1);
-        me.position = 7;
-        me.evaluateSquare(1);
-        me.position = 7;
-        me.evaluateSquare(1);
-        me.position = 7;
-        me.evaluateSquare(1);
-
+        String saveName = "HI";
+        String[] data = {"hi", "hi"};
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("./gameSaves/" + saveName + ".txt")))))
+        {
+            for (String line: data)
+            {
+               writer.write(line + "\n");
+            }
+            System.out.println("File successfully saved");
+            System.exit(0);
+        }
+        catch(IOException e)
+        {
+            System.out.println("Problem writing to file");
+        }
     }
 }

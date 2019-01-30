@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+
 public class IO
 {
     public static void display(String message)

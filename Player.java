@@ -223,15 +223,15 @@ public class Player
 
     public void evaluateStandard()
     {
-        int owner = getOwner();
-        if (owner == -1)
+        int owner = getOwner((Property)getCurrentSquare());
+        if (owner == -9)
         {
             if (!buyPrompt())
             {
                 resolveAuction((Property)getCurrentSquare(), "Normal");
             }
         }
-        else if (owner == -2)
+        else if (owner < 0)
         {
             IO.display("This property was mortgaged so no rent is due.");
         }
@@ -243,15 +243,15 @@ public class Player
 
     public void evaluateRailroad()
     {
-        int owner = getOwner();
-        if (owner == -1)
+        int owner = getOwner((Property)getCurrentSquare());
+        if (owner == -9)
         {
             if(!buyPrompt())
             {
                 resolveAuction((Property)getCurrentSquare(), "Normal");
             }
         }
-        else if (owner == -2)
+        else if (owner < 0)
         {
             IO.display("This property was mortgaged so no rent is due.");
         }
@@ -264,15 +264,15 @@ public class Player
 
     public void evaluateUtility(int roll)
     {
-        int owner = getOwner();
-        if (owner == -1)
+        int owner = getOwner((Property)getCurrentSquare());
+        if (owner == -9)
         {
             if(!buyPrompt())
             {
                 resolveAuction((Property)getCurrentSquare(), "Normal");
             }
         }
-        else if (owner == -2)
+        else if (owner < 0)
         {
             IO.display("This property was mortgaged so no rent is due.");
         }
@@ -400,25 +400,27 @@ public class Player
         }
     }
 
-    public int getOwner()
+    public int getOwner(Property prop)
     {
         int i = 0;
         for (Player p: playerList)
         {
-            if((p != null) && (p.getProperties()[((Property)Board.squareList[position]).getPropertyNum()] != null))
+            if((p != null) && (p.getProperties()[prop.getPropertyNum()] != null))
             {
                 return i;
             }
             i++;
         }
+        i = 0;
         for (Player p: playerList)
         {
-            if((p != null) && (p.getMortgagedProperties()[((Property)Board.squareList[position]).getPropertyNum()] != null))
+            if((p != null) && (p.getMortgagedProperties()[prop.getPropertyNum()] != null))
             {
-                return -2;
+                return -i - 1;
             }
+            i++;
         }
-        return -1;
+        return -9;
     }
 
     public void goToJail()
@@ -533,7 +535,7 @@ public class Player
             {
                 position = 28;
             }
-            int owner = getOwner();
+            int owner = getOwner((Property)getCurrentSquare());
             if (owner < 0)
             {
                 evaluateSquare(roll);
@@ -561,7 +563,7 @@ public class Player
             {
                 position = 25;
             }
-            int owner = getOwner();
+            int owner = getOwner((Property)getCurrentSquare());
             if (owner < 0)
             {
                 evaluateSquare(roll);
@@ -791,7 +793,7 @@ public class Player
         if(!isBankrupt)
         {
             printStatus();
-            String[] choices = {"Save Game", "Buy houses/hotels","Buy back mortgaged properties","Offer a trade", "End your turn"};
+            String[] choices = {"Save Game", "Buy houses/hotels","Buy back mortgaged properties","Offer a trade","View Properties","End your turn"};
             int choice = IO.prompt("What would you like to do?", choices);
             if (choice == 0)
             {
@@ -817,6 +819,10 @@ public class Player
             else if (choice == 3)
             {
                 resolveTrade();
+            }
+            else if (choice == 4)
+            {
+                printProperties();
             }
             else
             {
@@ -964,15 +970,26 @@ public class Player
         Trade trade2 = partner.createTrade(new Trade());
         if(!trade1.isCancelled() && !trade2.isCancelled())
         {
+            IO.display("");
             IO.display("Just to summarize, " + name + "'s trade:");
             IO.display(trade1.toString());
+            IO.display("");
             IO.display("Just to summarize, " + partner.getName() + "'s trade:");
             IO.display(trade2.toString());
+            IO.display("");
             IO.display("Please verify your passwords to confirm");
             if (verifyPassword() && partner.verifyPassword())
             {
                 finalizeTrade(trade1, trade2);
                 partner.finalizeTrade(trade2, trade1);
+                if(trade1.getMoney() > 0)
+                {
+                    pay(partner, trade1.getMoney());
+                }
+                if(trade2.getMoney() > 0)
+                {
+                    partner.pay(this, trade2.getMoney());
+                }
             }
             partner.printStatus();
             finishTurn();
@@ -986,7 +1003,6 @@ public class Player
 
     public void finalizeTrade(Trade lose, Trade get)
     {
-        money -= lose.getMoney();
         for (Property p: lose.getProps())
         {
             if (p != null)
@@ -1002,7 +1018,6 @@ public class Player
             }
         }
         getOutOfJailFree -= lose.getNumJail();
-        money += get.getMoney();
         for (Property p: get.getProps())
         {
             if (p != null)
@@ -1337,7 +1352,7 @@ public class Player
             }
             else
             {
-                IO.display("Invalid password. You have " +  (3 - ++count) + "attempts remaining");
+                IO.display("Invalid password. You have " +  (3 - ++count) + " attempts remaining");
             }
         }
         return false;
@@ -1456,4 +1471,37 @@ public class Player
         }
         return false;
     }
+
+    public void printProperties()
+    {
+        int count = 0;
+        int owner;
+        IO.display("");
+        IO.display("Here is a list of all the properties:");
+        for (Square s: Board.squareList)
+        {
+            if (s == Board.squareList[Board.propertyLocs[count]])
+            {
+                count++;
+                owner = getOwner((Property)s);
+                if(owner == -9)
+                {
+                    IO.display(s.toString());
+                }
+                else
+                {
+                    if (owner < 0)
+                    {
+                        IO.display(s.toString() + " (Mortgaged by " + playerList[Math.abs(owner) - 1] + ")");
+                    }
+                    else
+                    {
+                        IO.display(s.toString() + " (Owned by " + playerList[owner] + ")");
+                    }
+                }
+            }
+        }
+        finishTurn();
+    }
+                
 }
