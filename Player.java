@@ -4,8 +4,8 @@ public class Player
     static int playerCount = 0;
     private String name;
     private String password;
-    private int position;
-    private int money;
+    public int position;
+    public int money;
     private boolean isBankrupt;
     private boolean inJail;
     private int turnsInJail;
@@ -1173,6 +1173,7 @@ public class Player
                     choices[count] = properties[i].toString() + " (" + (addition + properties[i].getPrice() / 2) + ")";
                     propertyLocs[count] = i;
                     propertyVals[count] = properties[i].getPrice() / 2;
+                    count++;
                 }
                 addition = 0;
             }
