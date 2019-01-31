@@ -56,10 +56,7 @@ public class Player
         playerCount++;
     }
 
-    public Player(String name, String password, int position, int money, 
-            Property[] properties, Property[] mortgagedProps,
-            boolean inJail, int turnsInJail, int numRailroads,
-            int numUtilities, int houseCount, int hotelCount,
+    public Player(String name, String password, int position, int money, Property[] properties, Property[] mortgagedProps, boolean inJail, int turnsInJail, int numRailroads, int numUtilities, int houseCount, int hotelCount,
             int getOutOfJailFree)
     {
         this.name = name;
@@ -347,7 +344,7 @@ public class Player
         int numLeft = 1;
         int bid = 0;
         Player highestBidder;
-        if (type.equals("Normal"))
+        if (type.equals("Normal") && !isBankrupt)
         {
             highestBidder = this;
         }
@@ -357,7 +354,15 @@ public class Player
         }
         boolean done = false;
         String[] choices = {"Yes", "No"};
-        IO.display(prop + " is on auction. If nobody bids, " + highestBidder.toString() + " gets it for free");
+        IO.display("");
+        if (type.equals("Normal"))
+        {
+            IO.display(prop + " is on auction. If nobody bids, " + highestBidder.toString() + " gets it for free");
+        }
+        else
+        {
+            IO.display("The mortgaged property " + prop + " is on auction. If nobody bids, " + highestBidder.toString() + " gets it for free");
+        }
         while(!done)
         {
             for(i = 0; i < potentialBidders.length; i++)
@@ -738,7 +743,29 @@ public class Player
         if (amount > money)
         {
             String[] choices = {"Yes", "No"};
-            int choice = IO.prompt("Are you sure? You will have to mortgage properties to pay for this.", choices);
+            int worth = money;
+            int choice;
+            for (Property p: properties)
+            {
+                if (p != null)
+                {
+                    if (((StandardProperty)p).getDevelopment() > 1)
+                    {
+                        worth += (((StandardProperty)p).getDevelopment() - 1) + (((StandardProperty)p).getBuildingCost() / 2);
+                    }
+                    worth += p.getPrice() / 2;
+                }
+            }
+            if (worth >= amount)
+            {
+                choice = IO.prompt("Are you sure? You will have to mortgage properties to pay for this.", choices);
+            }
+            else
+            {
+                choice = IO.prompt("This is a terrible idea, you can only pay $" + worth + " out of $" + amount
+                        + " even if you mortgage everything. You WILL go bankrupt if you press yes. Are you sure?",
+                        choices);
+            }
             if (choice == 0)
             {
                 money -= amount;
@@ -766,6 +793,69 @@ public class Player
         }
     }
 
+    public boolean spend(int amount, Property prop)
+    {
+        if (amount > money)
+        {
+            String[] choices = {"Yes", "No"};
+            int[] thisSet = Board.sets[((StandardProperty)prop).getSetNumber()];
+            int worth = money;
+            int choice;
+            for (int i = 0; i < properties.length; i++)
+            {
+                if (properties[i] != null && !isInArray(i, thisSet))
+                {
+                    if (((StandardProperty)properties[i]).getDevelopment() > 1)
+                    {
+                        worth += (((StandardProperty)properties[i]).getDevelopment() - 1) +
+                            (((StandardProperty)properties[i]).getBuildingCost() / 2);
+                    }
+                    worth += properties[i].getPrice() / 2;
+                }
+            }
+            if (worth >= amount)
+            {
+                choice = IO.prompt("Are you sure? You will have to mortgage properties to pay for this.", choices);
+            }
+            else
+            {
+                choice = IO.prompt("This is a terrible idea, you can only pay $" + worth + " out of $" + amount
+                        + " even if you mortgage everything. You WILL go bankrupt if you press yes. Are you sure?",
+                        choices);
+            }
+            if (choice == 0)
+            {
+                money -= amount;
+                if (mortgage(prop))
+                {
+                    return true;
+                }
+                else
+                {
+                    for(int i: thisSet)
+                    {
+                        numProps--;
+                        mortgagedProps[i] = properties[i];
+                        properties[i] = null;
+                    }
+                    bankruptcyProcedures();
+                    return false;
+                }
+            }
+            else
+            {
+                IO.display("Good choice.");
+                return false;
+            }
+        }
+        else
+        {
+            money -= amount;
+            IO.display(name + " payed $" + amount + " and has $" + money + " remaining.");
+            return true;
+        }
+    }
+
     public boolean forceSpend(int amount)
     {
         if (amount > money)
@@ -773,7 +863,6 @@ public class Player
             money -= amount;
             if (goBankrupt())
             {
-                auctionAllStuff();
                 return false;
             }
             else
@@ -898,16 +987,23 @@ public class Player
                 int response = IO.prompt("Would you like to purchase houses/hotels on:", choices);
                 if(response != 0)
                 {
-                    buyProperty(properties[sets[i][response - 1]]);
+                    buyBuildings(properties[sets[i][response - 1]]);
+                    if (isBankrupt)
+                    {
+                        break;
+                    }
                     i--;
                 }
             }
         }
-        IO.display("All possible building opportunities have been exhausted.");
-        finishTurn();
+        if(!isBankrupt)
+        {
+            IO.display("All possible building opportunities have been exhausted.");
+            finishTurn();
+        }
     }
 
-    public void buyProperty(Property prop)
+    public void buyBuildings(Property prop)
     {
         int potentialPurchases = 7 - ((StandardProperty)prop).getDevelopment();
         String[] choices = new String[potentialPurchases];
@@ -916,7 +1012,7 @@ public class Player
             choices[i] = "" + i + " ($" + (((StandardProperty)prop).getBuildingCost() *  i) + ")";
         }
         int response = IO.prompt("How many stages of development do you want to buy?", choices);
-        if(spend(response * ((StandardProperty)prop).getBuildingCost()))
+        if(spend(response * ((StandardProperty)prop).getBuildingCost(), prop))
         {
             ((StandardProperty)prop).develop(response);
             IO.display("You successfully developed your property " + response + " times.");
@@ -1200,36 +1296,91 @@ public class Player
         }
     }
 
+    public boolean mortgage(Property prop)
+    {
+        IO.display(name + " owes $" + Math.abs(money));
+        int[] thisSet = Board.sets[((StandardProperty)prop).getSetNumber()];
+        int numberOfProps = numProps - thisSet.length;
+        if (numberOfProps > 0)
+        {
+            String[] choices = new String[numberOfProps];
+            int count = 0;
+            int addition = 0;
+            int[] propertyLocs = new int[numberOfProps];
+            int[] propertyVals = new int[numberOfProps];
+            for(int i = 0; i < properties.length; i++)
+            {
+                if (properties[i] != null && !isInArray(i, thisSet))
+                {
+                    if (properties[i].getType() == Square.STANDARD_PROPERTY && ((StandardProperty)properties[i]).getDevelopment() > 1)
+                    {
+                        addition += (((StandardProperty)properties[i]).getDevelopment() - 1) / 2;
+                    }
+                    choices[count] = properties[i].toString() + " (" + (addition + properties[i].getPrice() / 2) + ")";
+                    propertyLocs[count] = i;
+                    propertyVals[count] = properties[i].getPrice() / 2;
+                    count++;
+                }
+                addition = 0;
+            }
+            int choice = IO.prompt("Which property would you like to mortgage?", choices);
+            Property thisProp = properties[propertyLocs[choice]];
+            if (loseProperty(thisProp))
+            {
+                money += propertyVals[choice];
+                numMortgagedProps++;
+                mortgagedProps[thisProp.getPropertyNum()] = thisProp;
+            }
+            if(money >= 0)
+            {
+                return true;
+            }
+            else
+            {
+                return mortgage();
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     
     public boolean goBankrupt()
     {
         if(!mortgage())
         {
-            IO.display(name + " went Bankrupt");
-            for(int i = 0; i < playerList.length; i++)
-            {
-                if (playerList[i] == this)
-                {
-                    playerList[i] = null;
-                }
-            }
-            isBankrupt = true;
-            if(getRemainingPlayers() == 1)
-            {
-                for (Player p: playerList)
-                {
-                    if (p != null)
-                    {
-                        IO.display(p.toString() + " has won the game!");
-                        System.exit(0);
-                    }
-                }
-            }
+            bankruptcyProcedures();
             return true;
         }
         return false;
     }
 
+    public void bankruptcyProcedures()
+    {
+        IO.display(name + " went Bankrupt");
+        for(int i = 0; i < playerList.length; i++)
+        {
+            if (playerList[i] == this)
+            {
+                playerList[i] = null;
+            }
+        }
+        isBankrupt = true;
+        if(getRemainingPlayers() == 1)
+        {
+            for (Player p: playerList)
+            {
+                if (p != null)
+                {
+                    IO.display(p.toString() + " has won the game!");
+                    System.exit(0);
+                }
+            }
+        }
+        auctionAllStuff();
+    }
     public void giveAllStuff(Player recipient)
     {
         IO.display(name + " gave all properties to " + recipient.toString());
@@ -1505,4 +1656,15 @@ public class Player
         finishTurn();
     }
                 
+    public boolean isInArray(int val, int[] array)
+    {
+        for (int i: array)
+        {
+            if (i == val)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
