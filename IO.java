@@ -96,7 +96,7 @@ public class IO
         {
             for (String line: data)
             {
-               writer.write(line + "\n");
+               writer.write(line + " ");
             }
             System.out.println("File successfully saved");
             writer.close();
