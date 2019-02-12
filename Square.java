@@ -7,8 +7,14 @@ public class Square
     static final int TAX = 4;
     static final int CORNER = 5;
 
-    protected String name;
-    protected int type;
+    private String name;
+    private int type;
+    
+    public Square(String name, int type)
+    {
+        this.name = name;
+        this.type = type;
+    }
 
     public String toString()
     {

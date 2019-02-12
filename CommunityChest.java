@@ -7,8 +7,7 @@ public class CommunityChest extends Square
 
     public CommunityChest()
     {
-        this.name = "Community Chest";
-        this.type = Square.DECK;
+        super("Community Chest", Square.DECK);
         shuffle();
     }
 

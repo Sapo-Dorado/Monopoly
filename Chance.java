@@ -7,8 +7,7 @@ public class Chance extends Square
 
     public Chance()
     {
-        this.name = "Chance";
-        this.type = Square.DECK;
+        super("Chance", Square.DECK);
         shuffle();
     }
 

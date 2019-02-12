@@ -2,10 +2,7 @@ public class UtilityProperty extends Property
 {
     public UtilityProperty(String name)
     {
-        this.name = name;
-        this.price = 150;
-        this.type = Square.UTILITY_PROPERTY;
-        this.propertyNum = Property.propertyCount;
+        super(name, Square.UTILITY_PROPERTY, 150,  Property.propertyCount);
         Property.propertyCount++;
     }
 }

@@ -10,9 +10,8 @@ public class StandardProperty extends Property
             int house3, int house4, int hotel,
             int buildingCost, int setNumber)
     {
-        this.name = name;
-        this.price = price;
-        this.type = Square.STANDARD_PROPERTY;
+        super(name, Square.STANDARD_PROPERTY,  price, Property.propertyCount);
+        Property.propertyCount++;
         this.costs = new int[7];
         this.costs[0] = rent;
         this.costs[1] = rent * 2;
@@ -24,8 +23,6 @@ public class StandardProperty extends Property
         this.buildingCost = buildingCost;
         this.development = 0;
         this.setNumber = setNumber;
-        this.propertyNum = Property.propertyCount;
-        Property.propertyCount++;
     }
 
     public void develop(int amount)
