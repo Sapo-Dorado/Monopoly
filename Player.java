@@ -131,7 +131,7 @@ public class Player
                 {
                     String[] choices = {"Yes", "No"};
                     IO.display(name + " rolled a " + roll + " which is not a double. :(");
-                    if (IO.prompt("Do you want to leave Jail early?", choices) == 0)
+                    if (IO.prompt("Do you want to leave Jail early?\nYou have $" + money + " and it will cost $50.", choices) == 0)
                     {
                         leaveJail();
                         evaluateMove(roll);
@@ -749,7 +749,7 @@ public class Player
             {
                 if (p != null)
                 {
-                    if (((StandardProperty)p).getDevelopment() > 1)
+                    if (p.getType() == Square.STANDARD_PROPERTY && ((StandardProperty)p).getDevelopment() > 1)
                     {
                         worth += (((StandardProperty)p).getDevelopment() - 1) + (((StandardProperty)p).getBuildingCost() / 2);
                     }
