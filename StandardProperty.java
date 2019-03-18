@@ -1,3 +1,6 @@
+/**
+ * This class represents Standard Properties in Monopoly.
+ */
 public class StandardProperty extends Property
 {
     private int buildingCost;
@@ -5,6 +8,22 @@ public class StandardProperty extends Property
     private int development;
     private int setNumber;
     
+    /**
+     * This is the constructor for a Standard Property. It takes all the data
+     * about that property as parameters.
+     * 
+     * @param name the name of the property
+     * @param price the price of the property
+     * @param rent the rent of the property
+     * @param house1 the rent of the property after 1 house.
+     * @param house2 the rent of the property after 2 house.
+     * @param house3 the rent of the property after 3 house.
+     * @param house4 the rent of the property after 4 house.
+     * @param hotel the rent of the property after a hotel.
+     * @param buildingCost the cost of building one house or one hotel.
+     * @param setNumber a number representing what set this property is a part
+     * of
+     */
     public StandardProperty(String name, int price, int rent,
             int house1, int house2,
             int house3, int house4, int hotel,
@@ -25,31 +44,60 @@ public class StandardProperty extends Property
         this.setNumber = setNumber;
     }
 
+    /**
+     * This function increases the development of the property by a given
+     * amount.
+     * 
+     * @param amount how much the property is developed.
+     */
     public void develop(int amount)
     {
         development += amount;
     }
     
+    /**
+     * This function resets the development of the property to 0.
+     */
     public void resetDevelopment()
     {
         development = 0;
     }
 
+    /**
+     * This function returns the current rent of this property.
+     * 
+     * @return the rent
+     */
     public int getCost()
     {
         return costs[development];
     }
 
+    /**
+     * This function returns the set number of this property.
+     * 
+     * @return the set number
+     */
     public int getSetNumber()
     {
         return setNumber;
     }
 
+    /**
+     * This function returns the development level of this property.
+     * 
+     * @return the development level.
+     */
     public int getDevelopment()
     {
         return development;
     }
 
+    /**
+     * This function returns the cost of a building for this property.
+     * 
+     * @return the building cost
+     */
     public int getBuildingCost()
     {
         return buildingCost;

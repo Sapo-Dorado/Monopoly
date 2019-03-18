@@ -1,3 +1,6 @@
+/**
+ * This class represents a trade between two different players.
+ */
 public class Trade
 {
     private int money;
@@ -9,6 +12,9 @@ public class Trade
     private boolean hasProps;
     private boolean hasMortgagedProps;
     
+    /**
+     * This function constructs a trade with nothing inside of it.
+     */
     public Trade()
     {
         this.money = 0;
@@ -21,11 +27,19 @@ public class Trade
         this.hasMortgagedProps = false;
     }
 
+    /**
+     * This function cancels the trade.
+     */
     public void cancel()
     {
         isCancelled = true;
     }
 
+    /**
+     * This function adds a property to the trade.
+     * 
+     * @param prop the property to be added.
+     */
     public void add(Property prop)
     {
         props[prop.getPropertyNum()] = prop;
@@ -33,6 +47,11 @@ public class Trade
         numPropsInTrade++;
     }
 
+    /**
+     * This function adds a mortgaged Property to the trade.
+     * 
+     * @param prop the mortgaged property to be added.
+     */
     public void addMortgaged(Property prop)
     {
         mortgagedProps[prop.getPropertyNum()] = prop;
@@ -40,6 +59,11 @@ public class Trade
         numPropsInTrade++;
     }
 
+    /**
+     * This function adds money to a trade.
+     * 
+     * @param the amount of money to be added.
+     */
     public void addMoney(int amount)
     {
         money += amount;
@@ -50,16 +74,28 @@ public class Trade
         }
     }
     
+    /**
+     * This function adds a get out of jail free card to the trade.
+     */
     public void addGetOutOfJailFree()
     {
         numGetOutOfJail++;
     }
 
+    /**
+     * This function checks to see if the trade includes a specific property.
+     * @param prop the property being checked.
+     */
     public boolean includesProp(Property prop)
     {
         return props[prop.getPropertyNum()] != null;
     }
 
+    /**
+     * This function checks to see if the trade includes a specific mortgaged
+     * property.
+     * @param prop the mortgaged property to be checked.
+     */
     public boolean includesMortgagedProp(Property prop)
     {
         return mortgagedProps[prop.getPropertyNum()] != null;
